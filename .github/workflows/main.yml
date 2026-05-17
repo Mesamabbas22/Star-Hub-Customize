@@ -24,6 +24,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Verify build output
+        run: ls -la dist/ || (echo "Build failed: dist/ directory not found" && exit 1)
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
