@@ -1,22 +1,23 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import {
-    ArrowRight,
-    Bell,
-    Briefcase,
-    Check,
-    Heart,
-    Home,
-    Menu,
-    Minus,
-    PackageCheck,
-    Plus,
-    Search,
-    ShoppingBag,
-    Truck,
-    UserRound,
-    X,
-} from '@lucide/vue';
+import { Menu, Search, ShoppingBag, UserRound, X } from '@lucide/vue';
+import AccountPage from './pages/AccountPage.vue';
+import AuthPage from './pages/AuthPage.vue';
+import CatalogPage from './pages/CatalogPage.vue';
+import CategoriesPage from './pages/CategoriesPage.vue';
+import CheckoutPage from './pages/CheckoutPage.vue';
+import CollectionsPage from './pages/CollectionsPage.vue';
+import ContactPage from './pages/ContactPage.vue';
+import ExtraPage from './pages/ExtraPage.vue';
+import FaqPage from './pages/FaqPage.vue';
+import HomePage from './pages/HomePage.vue';
+import InfoPage from './pages/InfoPage.vue';
+import ProductDetailsPage from './pages/ProductDetailsPage.vue';
+import AdminCustomersPage from './pages/admin/AdminCustomersPage.vue';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage.vue';
+import AdminLoginPage from './pages/admin/AdminLoginPage.vue';
+import AdminOrdersPage from './pages/admin/AdminOrdersPage.vue';
+import AdminProductsPage from './pages/admin/AdminProductsPage.vue';
 
 const logoUrl = '/images/star-hub-logo.png';
 const menuOpen = ref(false);
@@ -37,6 +38,29 @@ const cart = ref([
     { ...products[0], quantity: 1 },
     { ...products[2], quantity: 1 },
 ]);
+
+const adminStats = [
+    { label: 'Revenue', value: '$12,480', note: '+18% this month', icon: 'revenue' },
+    { label: 'Orders', value: '186', note: '24 pending proof', icon: 'orders' },
+    { label: 'Products', value: '64', note: '8 low stock', icon: 'products' },
+    { label: 'Customers', value: '1,248', note: '42 new this week', icon: 'customers' },
+];
+
+const adminOrders = [
+    { id: 'SHC-1048', customer: 'Avery Stone', items: 'Welcome Box x2', status: 'Proofing', statusTone: 'warning', total: 184 },
+    { id: 'SHC-1047', customer: 'Maya Chen', items: 'Logo Hoodie x12', status: 'Production', statusTone: 'info', total: 576 },
+    { id: 'SHC-1046', customer: 'Noah Brooks', items: 'Desk Identity Kit x4', status: 'Ready', statusTone: 'success', total: 256 },
+    { id: 'SHC-1045', customer: 'Olivia Hart', items: 'Orbit Mug x24', status: 'Shipped', statusTone: 'success', total: 432 },
+    { id: 'SHC-1044', customer: 'Liam Carter', items: 'Laser Bottle Pro x10', status: 'Payment due', statusTone: 'danger', total: 340 },
+];
+
+const adminCustomers = [
+    { name: 'Avery Stone', email: 'avery@example.com', orders: 8, spent: 1460, status: 'Active', statusTone: 'success' },
+    { name: 'Maya Chen', email: 'maya@example.com', orders: 5, spent: 1128, status: 'Active', statusTone: 'success' },
+    { name: 'Noah Brooks', email: 'noah@example.com', orders: 3, spent: 624, status: 'New', statusTone: 'info' },
+    { name: 'Olivia Hart', email: 'olivia@example.com', orders: 12, spent: 2890, status: 'VIP', statusTone: 'warning' },
+    { name: 'Liam Carter', email: 'liam@example.com', orders: 2, spent: 340, status: 'Payment due', statusTone: 'danger' },
+];
 
 const pageGroups = [
     {
@@ -104,31 +128,90 @@ const pageGroups = [
     },
 ];
 
-const PageTitle = {
-    props: {
-        page: {
-            type: Object,
-            required: true,
-        },
-    },
-    template: `
-        <div class="page-head single">
-            <div>
-                <p class="eyebrow">Star Hub Customize</p>
-                <h1>{{ page.title }}</h1>
-                <p>This page is separated inside the Vue SPA and ready for real content.</p>
-            </div>
-        </div>
-    `,
-};
+const adminPages = [
+    { path: 'admin-login', title: 'Admin Login', type: 'admin-login' },
+    { path: 'admin', title: 'Dashboard', type: 'admin-dashboard' },
+    { path: 'admin-products', title: 'Admin Products', type: 'admin-products' },
+    { path: 'admin-orders', title: 'Admin Orders', type: 'admin-orders' },
+    { path: 'admin-customers', title: 'Admin Customers', type: 'admin-customers' },
+];
 
-const allPages = pageGroups.flatMap((group) => group.links);
+const allPages = [...pageGroups.flatMap((group) => group.links), ...adminPages];
 const categories = ['All', ...new Set(products.map((product) => product.category))];
 const featuredProduct = products[0];
 
 const currentPage = computed(() => allPages.find((page) => page.path === route.value) ?? allPages[0]);
 const cartTotal = computed(() => cart.value.reduce((sum, product) => sum + product.price * product.quantity, 0));
 const cartCount = computed(() => cart.value.reduce((sum, product) => sum + product.quantity, 0));
+const isAdminPage = computed(() => currentPage.value.type.startsWith('admin-'));
+
+const pageComponent = computed(() => {
+    if (currentPage.value.type === 'admin-login') {
+        return AdminLoginPage;
+    }
+
+    if (currentPage.value.type === 'admin-dashboard') {
+        return AdminDashboardPage;
+    }
+
+    if (currentPage.value.type === 'admin-products') {
+        return AdminProductsPage;
+    }
+
+    if (currentPage.value.type === 'admin-orders') {
+        return AdminOrdersPage;
+    }
+
+    if (currentPage.value.type === 'admin-customers') {
+        return AdminCustomersPage;
+    }
+
+    if (currentPage.value.type === 'home') {
+        return HomePage;
+    }
+
+    if (['shop', 'products', 'deals', 'new-arrivals', 'best-sellers', 'search-results'].includes(currentPage.value.type)) {
+        return CatalogPage;
+    }
+
+    if (currentPage.value.type === 'product-details') {
+        return ProductDetailsPage;
+    }
+
+    if (currentPage.value.type === 'categories') {
+        return CategoriesPage;
+    }
+
+    if (currentPage.value.type === 'collections') {
+        return CollectionsPage;
+    }
+
+    if (['cart', 'checkout', 'payment', 'confirmation', 'track'].includes(currentPage.value.type)) {
+        return CheckoutPage;
+    }
+
+    if (['auth-login', 'auth-register', 'auth-forgot'].includes(currentPage.value.type)) {
+        return AuthPage;
+    }
+
+    if (['account', 'profile', 'orders', 'wishlist', 'addresses'].includes(currentPage.value.type)) {
+        return AccountPage;
+    }
+
+    if (['contact', 'support'].includes(currentPage.value.type)) {
+        return ContactPage;
+    }
+
+    if (currentPage.value.type === 'faq') {
+        return FaqPage;
+    }
+
+    if (['blog', 'careers', 'policy', 'info'].includes(currentPage.value.type)) {
+        return InfoPage;
+    }
+
+    return ExtraPage;
+});
 
 const filteredProducts = computed(() => {
     return products.filter((product) => {
@@ -155,7 +238,68 @@ const pageProducts = computed(() => {
     return filteredProducts.value;
 });
 
+const currentPageProps = computed(() => {
+    if (currentPage.value.type === 'admin-dashboard') {
+        return { stats: adminStats, orders: adminOrders };
+    }
+
+    if (currentPage.value.type === 'admin-products') {
+        return { products };
+    }
+
+    if (currentPage.value.type === 'admin-orders') {
+        return { orders: adminOrders };
+    }
+
+    if (currentPage.value.type === 'admin-customers') {
+        return { customers: adminCustomers };
+    }
+
+    if (currentPage.value.type === 'home') {
+        return { products, logoUrl };
+    }
+
+    if (['shop', 'products', 'deals', 'new-arrivals', 'best-sellers', 'search-results'].includes(currentPage.value.type)) {
+        return {
+            page: currentPage.value,
+            products: pageProducts.value,
+            categories,
+            logoUrl,
+            searchQuery: searchQuery.value,
+            activeCategory: activeCategory.value,
+        };
+    }
+
+    if (currentPage.value.type === 'product-details') {
+        return { product: featuredProduct, logoUrl };
+    }
+
+    if (currentPage.value.type === 'categories') {
+        return { page: currentPage.value, categories, products };
+    }
+
+    if (['cart', 'checkout', 'payment', 'confirmation', 'track'].includes(currentPage.value.type)) {
+        return { page: currentPage.value, cart: cart.value, cartTotal: cartTotal.value };
+    }
+
+    return { page: currentPage.value };
+});
+
 function normalizeHash() {
+    if (window.location.pathname.startsWith('/admin')) {
+        const adminSlug = window.location.pathname.replace(/^\/admin\/?/, '').replace(/\/$/, '');
+
+        if (!adminSlug) {
+            return 'admin';
+        }
+
+        if (['login', 'products', 'orders', 'customers'].includes(adminSlug)) {
+            return `admin-${adminSlug}`;
+        }
+
+        return 'admin';
+    }
+
     return window.location.hash.replace(/^#\/?/, '') || 'home';
 }
 
@@ -195,15 +339,15 @@ onUnmounted(() => window.removeEventListener('hashchange', syncRoute));
 </script>
 
 <template>
-    <main class="min-h-screen bg-[#f7f7f5] text-[#171717]">
-        <header class="sticky top-0 z-30 border-b border-black/10 bg-[#f7f7f5]/95 backdrop-blur">
-            <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+    <main class="min-h-screen bg-[var(--page-bg)] text-[var(--ink)]">
+        <header class="app-header sticky top-0 z-30 backdrop-blur">
+            <div class="mx-auto flex max-w-[1920px] items-center justify-between px-5 py-4 lg:px-10 2xl:px-14">
                 <a class="flex items-center gap-3" href="#/home" aria-label="Star Hub Customize home">
                     <img class="h-10 w-10 rounded-md object-cover" :src="logoUrl" alt="Star Hub Customize logo">
                     <span class="text-sm font-semibold uppercase tracking-[0.18em]">Star Hub Customize</span>
                 </a>
 
-                <nav class="hidden items-center gap-6 text-sm font-medium text-[#666] lg:flex">
+                <nav class="hidden items-center gap-6 text-sm font-medium text-[var(--muted)] lg:flex">
                     <a href="#/home">Home</a>
                     <a href="#/shop">Shop</a>
                     <a href="#/products">Products</a>
@@ -229,9 +373,9 @@ onUnmounted(() => window.removeEventListener('hashchange', syncRoute));
                 </div>
             </div>
 
-            <nav v-if="menuOpen" class="mx-5 grid max-h-[70vh] gap-5 overflow-auto border-t border-black/10 py-4 text-sm lg:hidden">
+            <nav v-if="menuOpen" class="mx-5 grid max-h-[70vh] gap-5 overflow-auto border-t border-[var(--line)] py-4 text-sm lg:hidden">
                 <section v-for="group in pageGroups" :key="group.title">
-                    <h3 class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#8a8a86]">{{ group.title }}</h3>
+                    <h3 class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--soft-text)]">{{ group.title }}</h3>
                     <div class="grid grid-cols-2 gap-2">
                         <a v-for="page in group.links" :key="page.path" class="mobile-link" :href="`#/${page.path}`">{{ page.title }}</a>
                     </div>
@@ -239,8 +383,11 @@ onUnmounted(() => window.removeEventListener('hashchange', syncRoute));
             </nav>
         </header>
 
-        <div class="mx-auto grid max-w-7xl gap-8 px-5 py-8 lg:grid-cols-[250px_1fr] lg:px-8">
-            <aside class="side-nav hidden lg:block">
+        <div
+            class="mx-auto grid max-w-[1920px] gap-8 px-5 py-8 lg:px-10 2xl:px-14"
+            :class="isAdminPage ? '' : 'lg:grid-cols-[280px_1fr] 2xl:grid-cols-[310px_1fr]'"
+        >
+            <aside v-if="!isAdminPage" class="side-nav hidden lg:block">
                 <section v-for="group in pageGroups" :key="group.title" class="mb-6">
                     <h3>{{ group.title }}</h3>
                     <a
@@ -255,246 +402,19 @@ onUnmounted(() => window.removeEventListener('hashchange', syncRoute));
             </aside>
 
             <div class="min-w-0">
-                <section v-if="currentPage.type === 'home'" class="grid gap-8">
-                    <div class="hero-section">
-                        <div>
-                            <p class="eyebrow">Custom branded essentials</p>
-                            <h1>Simple products for your brand.</h1>
-                            <p>Clean apparel, drinkware, desk kits, and gift boxes customized with the Star Hub Customize style.</p>
-                            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                                <a class="primary-button" href="#/shop">
-                                    Shop products
-                                    <ArrowRight :size="18" />
-                                </a>
-                                <a class="secondary-button" href="#/collections">View collections</a>
-                            </div>
-                        </div>
-
-                        <div class="hero-product compact">
-                            <div class="hero-product__image">
-                                <img :src="logoUrl" alt="Star Hub Customize featured product">
-                            </div>
-                            <div class="flex items-end justify-between gap-4">
-                                <div>
-                                    <h2>Launch Brand Kit</h2>
-                                    <p>Hoodie, mug, notebook, stickers</p>
-                                </div>
-                                <button class="add-button" type="button" @click="addToCart(products[4])">
-                                    <Plus :size="17" />
-                                    Add
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid gap-4 md:grid-cols-3">
-                        <div class="info-card">
-                            <PackageCheck :size="22" />
-                            <h3>Proof before print</h3>
-                            <p>Approve artwork before production.</p>
-                        </div>
-                        <div class="info-card">
-                            <Truck :size="22" />
-                            <h3>Ready to ship</h3>
-                            <p>Clean packaging for teams and clients.</p>
-                        </div>
-                        <div class="info-card">
-                            <Check :size="22" />
-                            <h3>Brand matched</h3>
-                            <p>Simple layouts built around your logo.</p>
-                        </div>
-                    </div>
-                </section>
-
-                <section v-else-if="['shop', 'products', 'deals', 'new-arrivals', 'best-sellers', 'search-results'].includes(currentPage.type)" class="page-shell">
-                    <div class="page-head">
-                        <div>
-                            <p class="eyebrow">Catalog</p>
-                            <h1>{{ currentPage.title }}</h1>
-                            <p>Browse clean custom products and add them to your cart.</p>
-                        </div>
-                        <label class="search-box">
-                            <Search :size="18" />
-                            <input v-model="searchQuery" type="search" placeholder="Search products">
-                        </label>
-                    </div>
-
-                    <div class="mb-6 flex gap-2 overflow-x-auto pb-2">
-                        <button
-                            v-for="category in categories"
-                            :key="category"
-                            class="category-pill"
-                            :class="{ active: activeCategory === category }"
-                            type="button"
-                            @click="activeCategory = category"
-                        >
-                            {{ category }}
-                        </button>
-                    </div>
-
-                    <div class="product-grid-list">
-                        <article v-for="product in pageProducts" :key="product.id" class="product-card">
-                            <div class="product-visual" :class="product.tone">
-                                <span>{{ product.tag }}</span>
-                                <img :src="logoUrl" alt="">
-                            </div>
-                            <div class="p-4">
-                                <div class="mb-4 flex items-start justify-between gap-3">
-                                    <div>
-                                        <h3 class="font-semibold">{{ product.name }}</h3>
-                                        <p class="mt-1 text-sm text-[#666]">{{ product.lead }}</p>
-                                    </div>
-                                    <a class="tiny-icon" href="#/wishlist" aria-label="Save product">
-                                        <Heart :size="16" />
-                                    </a>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <strong class="text-lg">${{ product.price }}</strong>
-                                    <button class="add-button" type="button" @click="addToCart(product)">
-                                        <Plus :size="17" />
-                                        Add
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-                </section>
-
-                <section v-else-if="currentPage.type === 'product-details'" class="page-shell">
-                    <div class="product-detail">
-                        <div class="product-detail__image">
-                            <img :src="logoUrl" alt="Signature Logo Hoodie">
-                        </div>
-                        <div>
-                            <p class="eyebrow">Product Details</p>
-                            <h1>{{ featuredProduct.name }}</h1>
-                            <p>{{ featuredProduct.lead }} with clean logo placement, soft fabric, and bulk order options.</p>
-                            <strong class="mt-5 block text-3xl">${{ featuredProduct.price }}</strong>
-                            <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-                                <button class="primary-button" type="button" @click="addToCart(featuredProduct)">
-                                    Add to cart
-                                    <ShoppingBag :size="18" />
-                                </button>
-                                <a class="secondary-button" href="#/reviews">Read reviews</a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section v-else-if="currentPage.type === 'categories'" class="page-shell">
-                    <PageTitle :page="currentPage" />
-                    <div class="simple-grid">
-                        <a v-for="category in categories.filter((item) => item !== 'All')" :key="category" class="info-card" href="#/shop">
-                            <h3>{{ category }}</h3>
-                            <p>{{ products.filter((product) => product.category === category).length }} products available.</p>
-                        </a>
-                    </div>
-                </section>
-
-                <section v-else-if="currentPage.type === 'collections'" class="page-shell">
-                    <PageTitle :page="currentPage" />
-                    <div class="simple-grid">
-                        <div class="info-card"><h3>Launch Kits</h3><p>Starter bundles for new brands.</p></div>
-                        <div class="info-card"><h3>Office Essentials</h3><p>Desk goods and team supplies.</p></div>
-                        <div class="info-card"><h3>Gift Boxes</h3><p>Premium packs for clients.</p></div>
-                    </div>
-                </section>
-
-                <section v-else-if="['cart', 'checkout', 'payment', 'confirmation', 'track'].includes(currentPage.type)" class="page-shell">
-                    <PageTitle :page="currentPage" />
-                    <div class="checkout-layout">
-                        <div class="panel">
-                            <div v-for="item in cart" :key="item.id" class="cart-line">
-                                <div>
-                                    <h3>{{ item.name }}</h3>
-                                    <p>${{ item.price }} each</p>
-                                </div>
-                                <div class="quantity-control">
-                                    <button type="button" @click="updateQuantity(item.id, -1)"><Minus :size="14" /></button>
-                                    <span>{{ item.quantity }}</span>
-                                    <button type="button" @click="updateQuantity(item.id, 1)"><Plus :size="14" /></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="panel">
-                            <h3>Order summary</h3>
-                            <div class="summary-row"><span>Subtotal</span><span>${{ cartTotal }}</span></div>
-                            <div class="summary-row"><span>Shipping</span><span>$12</span></div>
-                            <div class="summary-row total"><span>Total</span><span>${{ cartTotal + 12 }}</span></div>
-                            <a class="checkout-button mt-5 w-full" :href="currentPage.type === 'cart' ? '#/checkout' : '#/order-confirmation'">
-                                Continue
-                                <ArrowRight :size="18" />
-                            </a>
-                        </div>
-                    </div>
-                </section>
-
-                <section v-else-if="['auth-login', 'auth-register', 'auth-forgot'].includes(currentPage.type)" class="page-shell narrow">
-                    <PageTitle :page="currentPage" />
-                    <form class="panel form-panel">
-                        <label>Email address<input type="email" placeholder="you@example.com"></label>
-                        <label v-if="currentPage.type !== 'auth-forgot'">Password<input type="password" placeholder="Password"></label>
-                        <label v-if="currentPage.type === 'auth-register'">Full name<input type="text" placeholder="Your name"></label>
-                        <button class="primary-button w-full" type="button">{{ currentPage.title }}</button>
-                    </form>
-                </section>
-
-                <section v-else-if="['account', 'profile', 'orders', 'wishlist', 'addresses'].includes(currentPage.type)" class="page-shell">
-                    <PageTitle :page="currentPage" />
-                    <div class="simple-grid">
-                        <div class="info-card"><UserRound :size="22" /><h3>Customer profile</h3><p>Manage your contact details and preferences.</p></div>
-                        <div class="info-card"><ShoppingBag :size="22" /><h3>Recent order</h3><p>SHC-1042 is currently in proofing.</p></div>
-                        <div class="info-card"><Heart :size="22" /><h3>Saved products</h3><p>Keep favorite products ready for your next order.</p></div>
-                    </div>
-                </section>
-
-                <section v-else-if="['contact', 'support'].includes(currentPage.type)" class="page-shell">
-                    <PageTitle :page="currentPage" />
-                    <div class="checkout-layout">
-                        <form class="panel form-panel">
-                            <label>Name<input type="text" placeholder="Your name"></label>
-                            <label>Email<input type="email" placeholder="you@example.com"></label>
-                            <label>Message<textarea placeholder="How can we help?"></textarea></label>
-                            <button class="primary-button" type="button">Send message</button>
-                        </form>
-                        <div class="panel">
-                            <h3>Support details</h3>
-                            <p>Email: support@starhubcustomize.test</p>
-                            <p>Phone: +1 555 0100</p>
-                            <p>Hours: Monday to Friday, 9 AM to 6 PM</p>
-                        </div>
-                    </div>
-                </section>
-
-                <section v-else-if="currentPage.type === 'faq'" class="page-shell">
-                    <PageTitle :page="currentPage" />
-                    <div class="panel stack">
-                        <details open><summary>How long does production take?</summary><p>Most orders are proofed within 48 hours and produced after approval.</p></details>
-                        <details><summary>Can I order in bulk?</summary><p>Yes, bulk packaging and shipping are available for teams and clients.</p></details>
-                        <details><summary>Can I use my own logo?</summary><p>Yes, the storefront is ready for custom uploaded branding.</p></details>
-                    </div>
-                </section>
-
-                <section v-else-if="['blog', 'careers', 'policy', 'info'].includes(currentPage.type)" class="page-shell">
-                    <PageTitle :page="currentPage" />
-                    <div class="simple-grid">
-                        <article class="info-card"><Briefcase :size="22" /><h3>{{ currentPage.title }}</h3><p>This SPA page is ready for your real business content, images, and backend data.</p></article>
-                        <article class="info-card"><PackageCheck :size="22" /><h3>Brand quality</h3><p>Simple layout, readable sections, and clean calls to action.</p></article>
-                    </div>
-                </section>
-
-                <section v-else-if="['compare', 'reviews', 'notifications', 'vendor', 'affiliate'].includes(currentPage.type)" class="page-shell">
-                    <PageTitle :page="currentPage" />
-                    <div class="simple-grid">
-                        <div class="info-card"><Bell :size="22" /><h3>Overview</h3><p>{{ currentPage.title }} content is separated as its own SPA view.</p></div>
-                        <div class="info-card"><Home :size="22" /><h3>Next step</h3><p>Connect this view to real Laravel API data when backend modules are ready.</p></div>
-                    </div>
-                </section>
+                <component
+                    :is="pageComponent"
+                    v-bind="currentPageProps"
+                    @add-to-cart="addToCart"
+                    @update-quantity="updateQuantity"
+                    @update:activeCategory="activeCategory = $event"
+                    @update:searchQuery="searchQuery = $event"
+                />
             </div>
         </div>
 
-        <footer class="border-t border-black/10 bg-white">
-            <div class="mx-auto flex max-w-7xl flex-col gap-3 px-5 py-6 text-sm text-[#666] md:flex-row md:items-center md:justify-between lg:px-8">
+        <footer class="border-t border-[var(--line)] bg-[var(--surface)]">
+            <div class="mx-auto flex max-w-[1920px] flex-col gap-3 px-5 py-6 text-sm text-[var(--muted)] md:flex-row md:items-center md:justify-between lg:px-10 2xl:px-14">
                 <span>Star Hub Customize</span>
                 <div class="flex flex-wrap gap-4">
                     <a href="#/privacy-policy">Privacy</a>
